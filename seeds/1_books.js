@@ -1,3 +1,5 @@
+"use strict"
+
 exports.seed = function(knex) {
     return knex('books').del()
         .then(() => {
