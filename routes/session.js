@@ -2,64 +2,54 @@
 
 const express = require('express')
 const router = express.Router()
-const bcrypt = require('bcrypt-as-promised')
+const bcrypt = require('bcrypt')
 const knex = require('../knex')
-// const humps = require('humps')
+const cookieSession = require('cookie-session')
+    // const humps = require('humps')
 
 
 router.get('/', (req, res) => {
-    if (req.session.userID) {
+    if (req.session.userID !== undefined) {
         res.send(true)
+    } else {
+        res.send(false)
     }
-    res.send(false)
 })
 
 router.post('/', function(req, res) {
-  knex('users').where('email', req.body.email).then(function(results) {
-    console.log(results)
-    if (!results) {
-      res.send('Username is already being used.')
-    } else {
-      var user = req.body
-      var hash = bcrypt.hash(req.body.password, 12)
-      knex('users')
-        .returning('*')
-        .insert({
-          email: user.email,
-          password: hash,
+    knex('users').where('email', req.body.email)
+        .then(function(user) {
+            if(user.length === 0) {
+              res.type('text/plain')
+              res.status(400)
+              res.send('Bad email or password')
+            } else {
+                var check = bcrypt.compareSync(req.body.password, user[0].hashed_password)
+                if (check === true) {
+                    let userObj = {
+                        id: user[0].id,
+                        firstName: user[0].first_name,
+                        lastName: user[0].last_name,
+                        email: user[0].email,
+                    }
+                    delete user[0].hashed_password
+                    req.session.userID = user[0]
+                    res.json(userObj)
+                } else {
+                  res.type('text/plain')
+                  res.status(400)
+                  res.send('Bad email or password')
+
+                }
+            }
         })
-        .then(function(results) {
-          console.log(results)
-          // delete results.password;
-          req.session.userInfo = results
-          res.send(user)
-        })
-    }
-  })
 })
 
+router.delete('/', function(req, res) {
+  req.session = null
+  res.send(true)
+})
 
-
-
-// router.post('/', (req, res) => {
-//     let user
-//     knex('users')
-//         .where('email', req.body.email)
-//         .first()
-//         .then(function(results) {
-//             if (!results) {
-//                 res.send('Please enter an email.')
-//             }
-//           user = humps.camelizeKeys(results)
-//         })
-//     var passwordMatch = bcrypt.compare(req.body.password, user.hashed_password)
-//     delete user.hashed_password
-//     if (passwordMatch === false) {
-//         res.send('Username or password incorrect.')
-//     } else {
-//         res.send(user)
-//     }
-// })
 
 
 

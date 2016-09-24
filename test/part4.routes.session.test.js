@@ -45,8 +45,8 @@ suite('part4 routes session', () => {
         email: 'jkrowling@gmail.com',
         password: 'youreawizard',
       })
-      .expect('set-cookie', /bookshelf=[a-zA-Z0-9=]* path=\//)
-      .expect('set-cookie', /bookshelf.sig=[a-zA-Z0-9=\-_]* path=\//)
+      .expect('set-cookie', /bookshelf=[a-zA-Z0-9=]*; path=\//)
+      .expect('set-cookie', /bookshelf.sig=[a-zA-Z0-9=\-_]*; path=\//)
       .expect('Content-Type', /json/)
       .expect((res) => {
         delete res.body.createdAt
@@ -90,8 +90,8 @@ suite('part4 routes session', () => {
     request(server)
       .del('/session')
       .set('Accept', 'application/json')
-      .expect('set-cookie', /bookshelf= path=\//)
-      .expect('set-cookie', /bookshelf.sig=[a-zA-Z0-9=\-_]* path=\//)
+      .expect('set-cookie', /bookshelf=; path=\//)
+      .expect('set-cookie', /bookshelf.sig=[a-zA-Z0-9=\-_]*; path=\//)
       .expect('Content-Type', /json/)
       .expect(200, 'true', done)
   })
