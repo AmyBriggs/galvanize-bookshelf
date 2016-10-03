@@ -2,7 +2,6 @@
 
 const express = require('express')
 const router = express.Router()
-const bcrypt = require('bcrypt')
 const knex = require('../knex')
 const cookieSession = require('cookie-session')
 const humps = require('humps')
@@ -12,17 +11,17 @@ const authorize = function(req, res, next) {
     res.status('401')
     res.type('text/plain')
     res.send('Unauthorized')
-  }else{
+  } else {
     next()
   }
 }
 
 
-router.get('/', authorize, function(req, res) {
+router.get('/', authorize, function(req, res, next) {
 
     knex('favorites')
         .innerJoin('books', 'favorites.book_id', 'books.id')
-        .where('favorites.user_id', 1)
+        .where('favorites.user_id', req.session.userID.id)
         .then((favorites) => {
             var total = []
             for (var i = 0; i < favorites.length; i++) {
@@ -41,6 +40,9 @@ router.get('/', authorize, function(req, res) {
                 total.push(obj)
             }
             res.json(humps.camelizeKeys(total))
+        })
+        .catch((err) => {
+          next(err)
         })
 })
 
@@ -61,14 +63,14 @@ router.post('/', authorize, function(req, res) {
     knex('favorites')
         .returning(['id', 'book_id', 'user_id'])
         .insert({
-            'user_id': 1,
+            'user_id': req.session.userID.id,
             'book_id': req.body.bookId
         }).then((favorite) => {
             res.send(humps.camelizeKeys(favorite[0]))
         })
 })
 
-router.delete('/', authorize, function(req, res) {
+router.delete('/', authorize, function(req, res, next) {
             knex('favorites')
             .returning(['book_id', 'user_id'])
                 .where('book_id', req.body.bookId)
