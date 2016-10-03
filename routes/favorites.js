@@ -49,6 +49,7 @@ router.get('/', authorize, function(req, res, next) {
 router.get('/:id', authorize, function(req, res) {
     knex('favorites')
         .where('book_id', req.query.bookId)
+        .where('book_id', req.session.userID.id)
         .then((favorites) => {
             if (favorites.length === 0) {
                 res.send(false)
@@ -74,6 +75,7 @@ router.delete('/', authorize, function(req, res, next) {
             knex('favorites')
             .returning(['book_id', 'user_id'])
                 .where('book_id', req.body.bookId)
+                .where('book_id', req.session.userID.id)
                 .del().then((favorite) => {
                   res.json(humps.camelizeKeys(favorite[0])
                 )
