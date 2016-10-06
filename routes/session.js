@@ -5,7 +5,7 @@ const router = express.Router()
 const bcrypt = require('bcrypt')
 const knex = require('../knex')
 const cookieSession = require('cookie-session')
-    // const humps = require('humps')
+
 
 
 router.get('/', (req, res) => {

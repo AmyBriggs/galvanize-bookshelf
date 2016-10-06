@@ -6,8 +6,13 @@ const bcrypt = require('bcrypt-as-promised')
 const knex = require('../knex')
 const humps = require('humps')
 const cookieSession = require('cookie-session')
+// add validate, validation
+const validate = require('express-validation');
+const validation = require('../validations/users');
 
-router.post('/', (req, res, next) => {
+
+// add express-validation stuff (validate(validation.users) after path)
+router.post('/', validate(validation.users), (req, res, next) => {
   bcrypt.hash(req.body.password, 12)
     .then((hashed_password) => {
       return knex('users')
@@ -23,7 +28,8 @@ router.post('/', (req, res, next) => {
       delete user.hashed_password
       req.session.userID = user
       res.send(humps.camelizeKeys(user))
-
+// add code to check for all things (try string().min() for username)
+// handle duplicate email addresses
     })
     .catch((err) => {
       next(err)
